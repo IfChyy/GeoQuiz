@@ -1,10 +1,15 @@
 package com.example.user.geoquiz;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewAnimationUtils;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -18,6 +23,7 @@ public class CheatActivity extends AppCompatActivity implements View.OnClickList
     //views
     private TextView answerTextView;
     private Button showAnswer;
+    private TextView apiVersion;
 
     private boolean answerIsTrue;
     private boolean cheated;
@@ -36,16 +42,22 @@ public class CheatActivity extends AppCompatActivity implements View.OnClickList
         //text view showing the actual answer
         showAnswer = findViewById(R.id.show_answer_button);
         showAnswer.setOnClickListener(this);
+
+        //api version text view
+        apiVersion = findViewById(R.id.sdk_version);
+        apiVersion.setText("Phone api version is:" + Build.VERSION.RELEASE);
+
         //check if after screen rotation cheating button ispressed value still equal to true
-        if(savedInstanceState !=null){
+        if (savedInstanceState != null) {
             cheated = savedInstanceState.getBoolean(DID_CHEAT, false);
 
         }
         //if value equal true then cheated quals to true
-        if(cheated){
-          setAnswerShownResutl(true);
+        if (cheated) {
+            setAnswerShownResutl(true);
         }
     }
+
     //save data after screen rotation for pressing cheat button
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -61,7 +73,7 @@ public class CheatActivity extends AppCompatActivity implements View.OnClickList
     }
 
     //returns intent extra with key extra_answer_shown and value false
-    public static boolean wasAnswerShown(Intent result){
+    public static boolean wasAnswerShown(Intent result) {
         return result.getBooleanExtra(EXTRA_ANSWER_SHOWN, false);
     }
 
@@ -84,6 +96,29 @@ public class CheatActivity extends AppCompatActivity implements View.OnClickList
             //boolean to store true if cheated after rotating sreen
             cheated = true;
             setAnswerShownResutl(true);
+
+            //check if api 21 supported if so animate show answer button to hide from width into the center
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                //center x and y
+                int cx = showAnswer.getWidth() / 2;
+                int cy = showAnswer.getHeight() / 2;
+                //radius
+                float radius = showAnswer.getWidth();
+                //animation invoke
+                Animator animation = ViewAnimationUtils.createCircularReveal(showAnswer, cx, cy, radius, 0);
+                animation.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        // after animation finishe hide butotn
+                        showAnswer.setVisibility(View.INVISIBLE);
+
+                    }
+                });
+                animation.start();
+            } else {
+                showAnswer.setVisibility(View.INVISIBLE);
+            }
 
         }
 
