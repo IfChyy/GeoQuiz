@@ -76,7 +76,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         leftArrow = findViewById(R.id.left_arrow);
         leftArrow.setOnClickListener(this);
 
-
         //------CHALLENGE
         //----------right arrow button
         rightArrow = findViewById(R.id.right_arrow);
