@@ -5,11 +5,10 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewAnimationUtils;
-import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -47,14 +46,16 @@ public class CheatActivity extends AppCompatActivity implements View.OnClickList
         apiVersion = findViewById(R.id.sdk_version);
         apiVersion.setText("Phone api version is:" + Build.VERSION.RELEASE);
 
-        //check if after screen rotation cheating button ispressed value still equal to true
+        //check if after screen rotation cheating button is pressed value still equal to true
         if (savedInstanceState != null) {
             cheated = savedInstanceState.getBoolean(DID_CHEAT, false);
 
         }
-        //if value equal true then cheated quals to true
+        //if value equal true then cheated equals to true
         if (cheated) {
             setAnswerShownResutl(true);
+          showAnswer.performClick();
+
         }
     }
 
@@ -72,16 +73,19 @@ public class CheatActivity extends AppCompatActivity implements View.OnClickList
         return in;
     }
 
+    //method needed to get value of cheated in actiivty result of parent activity
     //returns intent extra with key extra_answer_shown and value false
     public static boolean wasAnswerShown(Intent result) {
         return result.getBooleanExtra(EXTRA_ANSWER_SHOWN, false);
     }
 
-    // send result of type boolean to the parent activity from the previous chil activity
+    //set value of EXTRA_ANSWER_SHOWN with value of cheated and return value with method (wasAnswerShown)
     private void setAnswerShownResutl(boolean isAnswerShown) {
+
         Intent data = new Intent();
         data.putExtra(EXTRA_ANSWER_SHOWN, isAnswerShown);
         setResult(RESULT_OK, data);
+
     }
 
     //on click listeners
@@ -93,34 +97,48 @@ public class CheatActivity extends AppCompatActivity implements View.OnClickList
             } else {
                 answerTextView.setText(R.string.false_button);
             }
-            //boolean to store true if cheated after rotating sreen
+            //boolean to store true if cheated after rotating screen
             cheated = true;
+            //method to set value of cheated
             setAnswerShownResutl(true);
 
-            //check if api 21 supported if so animate show answer button to hide from width into the center
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                //center x and y
-                int cx = showAnswer.getWidth() / 2;
-                int cy = showAnswer.getHeight() / 2;
-                //radius
-                float radius = showAnswer.getWidth();
-                //animation invoke
-                Animator animation = ViewAnimationUtils.createCircularReveal(showAnswer, cx, cy, radius, 0);
-                animation.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        super.onAnimationEnd(animation);
-                        // after animation finishe hide butotn
-                        showAnswer.setVisibility(View.INVISIBLE);
-
-                    }
-                });
-                animation.start();
-            } else {
-                showAnswer.setVisibility(View.INVISIBLE);
-            }
+            //method to animate show answer button
+            animateButton(showAnswer);
 
         }
 
+    }
+
+    //method to animate our button
+    private void animateButton(final View view) {
+        //check if api 21 supported if so animate show answer button to hide from width into the center
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+            view.post(new Runnable() {
+                @Override
+                public void run() {
+                    //center x and y
+                    int cx = view.getWidth() / 2;
+                    int cy = view.getHeight() / 2;
+                    //radius
+                    float radius = view.getWidth();
+                    //animation invoke
+                    Animator animation = ViewAnimationUtils.createCircularReveal(view, cx, cy, radius, 0);
+                    animation.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            // after animation finishe hide butotn
+                            view.setVisibility(View.INVISIBLE);
+
+                        }
+                    });
+                    animation.start();
+                }
+            });
+
+        } else {
+            view.setVisibility(View.INVISIBLE);
+        }
     }
 }

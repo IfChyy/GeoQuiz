@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             new Question(R.string.question_americas, true),
             new Question(R.string.question_asia, true),
     };
+
     //key values to store different parameters after screen rotation
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
         //init the array list holding the numbers of the cheated questions
         cheatedQuestions = new ArrayList<>();
-        //get the saved bundle data
+        //get the saved bundle data if screen rotated
         if (savedInstanceState != null) {
             currentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
             isCheater = savedInstanceState.getBoolean(DID_CHEAT, false);
@@ -117,10 +118,14 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         }
     }
 
+    //save the current index of question, if cheated, and put them in bundle
+    //if screen rotated the app will get these values to know at which question
+    //you were previously and if the user had cheated
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         Log.i(TAG, "onSaveInstanceState");
+
         //save the current index of question in the bundle
         outState.putInt(KEY_INDEX, currentIndex);
         outState.putBoolean(DID_CHEAT, isCheater);
@@ -142,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         boolean answerIsTrue = questionBank[currentIndex].isAnswerTrue();
 
         int messageResId = 0;
-        if (isCheater) {
+        if (isCheater) {//check if cheated
             messageResId = R.string.judgment_toast;
 
         } else {
@@ -178,12 +183,13 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         //------CHALLENGE
         //---------left arrow button on click
         if (view.getId() == leftArrow.getId()) {
+            //change index of question to previous
             currentIndex = (currentIndex - 1) % questionBank.length;
 
+            //if index is less than 0 change to last question from array
             if (currentIndex < 0) {
                 currentIndex = questionBank.length - 1;
             }
-
 
             // check if answer cheated
             if (cheatedQuestions.contains(currentIndex)) {
@@ -197,7 +203,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         //------CHALLENGE
         //---------rigth arrow button on click
         if (view.getId() == rightArrow.getId()) {
+            //get the next question from the array
             currentIndex = (currentIndex + 1) % questionBank.length;
+            //if question index is bigger than lenght of array start from question 0
             if (currentIndex > questionBank.length) {
                 currentIndex = 0;
             }
@@ -214,7 +222,12 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         //---------cheat button on click
         if (view.getId() == cheatButton.getId()) {
             boolean answerIsTrue = questionBank[currentIndex].isAnswerTrue();
+            //new intent to our cheat actity passing the answer value
             Intent in = CheatActivity.newIntent(this, answerIsTrue);
+            //start activity for result with request code
+            //when returning to main actiivty from these one
+            //we use this REQUEST_CODE_CHEAT  value to know if user had cheated
+            //we get the value in activity result method
             startActivityForResult(in, REQUEST_CODE_CHEAT);
         }
 
